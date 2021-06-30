@@ -28,7 +28,7 @@ async function fetchEvents() {
     try {
         //getting info from the api
         let info = await getAPI(api_url);
-       console.log(info);
+        //console.log(info);
         //creating an array for the info from the api 
         //then mapping the event details to the array 
         let infoArray = info.map(event => {
@@ -38,37 +38,41 @@ async function fetchEvents() {
             var year = dateObj.getFullYear();
             newdate = year + "-" + month + "-" + day;
 
-            return { title: event.title, url:`https://odum.unc.edu/event/${event.slug}/${newdate}`, description: event.description, date: event.start_date };
+            return { title: event.title, url: `https://odum.unc.edu/event/${event.slug}/${newdate}`, description: event.description, date: event.start_date };
         });
-        return infoArray;
+        // return infoArray;
         //filtering through the event descriptions to only pull data science events
-        /*
+
         var dataScienceEvents = infoArray.filter((event) => {
             return event.description.includes('mixed methods'); //case sensitive
-        });*/
+        });
     }
     //
     catch (error) {
         console.log(error);
     }
-    //console.log(dataScienceEvents);
+    // console.log(dataScienceEvents);
 }
 //fetchEvents()
 
 //writing event details to a JSON file
 async function writeEvents() {
-    //writing data to JSON file
-    const fs = require('fs');
-    const dataEvents = await fetchEvents();
-    const jsonString = JSON.stringify(dataEvents, null, 2);
-    fs.writeFile('./newEvents.json', jsonString, err => {
-        if (err) {
-            console.log('Error writing file', err);
-        } else {
-            console.log('Successfully wrote file');
-        }
-    });
-    //console.log(dataEvents);
+    try {
+        //writing data to JSON file
+        const fs = require('fs');
+        const dataEvents = await fetchEvents();
+        const jsonString = JSON.stringify(dataEvents, null, 2);
+        fs.writeFile('./newEvents.json', jsonString, err => {
+            if (err) {
+                console.log('Error writing file', err);
+            } else {
+                console.log('Successfully wrote file');
+            }
+        });
+        console.log(dataEvents);
+    } catch (error) {
+        console.log(error);
+    }
 }
 writeEvents()
 /*
