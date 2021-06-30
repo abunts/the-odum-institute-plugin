@@ -15,45 +15,69 @@ async function getAPI(api_url) {
         const response = await fetch(api_url);
         //storing data in json format
         var data = await response.json();
+       // console.log(data.events);
     }
     catch (error) {
         console.log(error);
     }
-    //accounting for json parsing error (enpoint might be sensitive to "user-agent")
-    headers: {
-        Accept: 'application/json, text/plain, */*',
-            'User-Agent';
-    }
-    return data.value;
+    return data.events;
 }
-//rendering event data from API
-async function renderAPI() {
+//fetchEvents function 
+//gets and returns events 
+async function fetchEvents() {
     try {
+        //getting info from the api
         let info = await getAPI(api_url);
-        let infoArray = await info.map(event => {
-            return { name: event.title, description: event.description, url: `https://odum.unc.edu/event/${event.slug}/${event.start_date}`, date: event.start_date }
+        console.log(info);
+        //creating an array for the info from the api 
+        //then mapping the event details to the array 
+        let infoArray = info.map(event => {
+              //  url = `https://odum.unc.edu/event/${event.slug}/${event.start_date}`,
+            return {title: event.title, description: event.description, date: event.start_date};
         });
-
-        var dataScienceEvents = await infoArray.filter((event) => {
-            return event.description.includes('data science'); //case sensitive
-        });
-        //writing data to JSON file
-        const fs = require('fs');
-        const jsonString = JSON.stringify(dataScienceEvents, null, 2);
-        fs.writeFile('./newEvents.json', jsonString, err => {
-            if (err) {
-                console.log('Error writing file', err);
-            } else {
-                console.log('Successfully wrote file');
-            }
-        });
-        console.log(dataScienceEvents);
+        return infoArray;
+        //filtering through the event descriptions to only pull data science events
+        /*
+        var dataScienceEvents = infoArray.filter((event) => {
+            return event.description.includes('mixed methods'); //case sensitive
+        });*/
     }
+    //
     catch (error) {
         console.log(error);
     }
+    //console.log(dataScienceEvents);
 }
-renderAPI()
+//fetchEvents()
 
-//add to package.json file
-//"nodemon --ignore '*newEvents.json' request.js"
+//writing event details to a JSON file
+async function writeEvents() {
+    //writing data to JSON file
+    const fs = require('fs');
+    const dataEvents = await fetchEvents();
+    const jsonString = JSON.stringify(dataEvents, null, 2);
+    fs.writeFile('./newEvents.json', jsonString, err => {
+        if (err) {
+            console.log('Error writing file', err);
+        } else {
+            console.log('Successfully wrote file');
+        }
+    });
+    console.log(dataEvents);
+}
+writeEvents()
+/*
+//add fetchEvents function: responsible for getting and returning the events
+//add transformEvents function: responsible for making the response you receive "look" like the event format you want
+//add writeEvents function: responsible for interacting with the file system
+
+//final code format would look something like this:
+const events = fetchEvents(),
+    formattedEvents = transformEvents(events);
+writeEvents(formattedEvents);
+
+
+function transformEvents() {
+    //
+}
+*/
