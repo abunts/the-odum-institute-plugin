@@ -15,7 +15,7 @@ async function getAPI(api_url) {
         const response = await fetch(api_url);
         //storing data in json format
         var data = await response.json();
-       // console.log(data.events);
+        // console.log(data.events);
     }
     catch (error) {
         console.log(error);
@@ -28,12 +28,17 @@ async function fetchEvents() {
     try {
         //getting info from the api
         let info = await getAPI(api_url);
-        console.log(info);
+       console.log(info);
         //creating an array for the info from the api 
         //then mapping the event details to the array 
         let infoArray = info.map(event => {
-              //  url = `https://odum.unc.edu/event/${event.slug}/${event.start_date}`,
-            return {title: event.title, description: event.description, date: event.start_date};
+            var dateObj = new Date(event.start_date);
+            var month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
+            var day = ("0" + dateObj.getDate()).slice(-2);
+            var year = dateObj.getFullYear();
+            newdate = year + "-" + month + "-" + day;
+
+            return { title: event.title, url:`https://odum.unc.edu/event/${event.slug}/${newdate}`, description: event.description, date: event.start_date };
         });
         return infoArray;
         //filtering through the event descriptions to only pull data science events
@@ -63,7 +68,7 @@ async function writeEvents() {
             console.log('Successfully wrote file');
         }
     });
-    console.log(dataEvents);
+    //console.log(dataEvents);
 }
 writeEvents()
 /*
