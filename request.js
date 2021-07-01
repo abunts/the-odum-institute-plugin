@@ -16,38 +16,27 @@ async function getAPI(api_url) {
     catch (error) {
         console.log(error);
     }
-    //accounting for json parsing error (enpoint might be sensitive to "user-agent")
-    headers: {
-        Accept: 'application/json, text/plain, */*',
-            'User-Agent';
-    }
     return data.events;
 }
 //rendering event data from API
 async function renderAPI(events) {
     //getting info from the api
+    let urlDate = new Date();
     let infoArray
     try {
         infoArray = events.map(event => ({
             name: event.title,
             description: event.description,
             date: event.start_date,
-            urlDate: {
-                dateObj: new Date(event.start_date),
-                month: ("0" + (dateObj.getMonth() + 1)).slice(-2),
-                day: ("0" + dateObj.getDate()).slice(-2),
-                year: dateObj.getFullYear(),
-                newdate: year + "-" + month + "-" + day,
-            },
-            url: `https://odum.unc.edu/event/${event.slug}/${urlDate}`,
+            url: `https://odum.unc.edu/event/${event.slug}/${event.start_date.slice(0,11)}`,
         }));
         console.log(infoArray);
         var dataScienceEvents = infoArray.filter((event) => {
-            return event.description.includes('Introduction'); //case sensitive
+            return event.description.includes('Data'); //case sensitive
         });
         //writing data to JSON file
         const fs = require('fs');
-        const jsonString = JSON.stringify(dataEvents, null, 2);
+        const jsonString = JSON.stringify(dataScienceEvents, null, 2);
         fs.writeFile('./newEvents.json', jsonString, err => {
             if (err) {
                 console.log('Error writing file', err);
@@ -61,4 +50,10 @@ async function renderAPI(events) {
     }
     return infoArray;
 }
-renderAPI();
+(async () => {
+    // first, let's grab the events
+    const events = await getAPI(api_url)
+    // necxt, we'll put the event objects into the correct format
+    // and write the events to file
+    renderAPI(events)
+})();
