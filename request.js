@@ -28,7 +28,7 @@ async function renderAPI(events) {
             name: event.title,
             description: event.description,
             date: event.start_date,
-            url: `https://odum.unc.edu/event/${event.slug}/${event.start_date.slice(0,11)}`,
+            url: `https://odum.unc.edu/event/${event.slug}/${event.start_date.slice(0, 11)}`,
         }));
         console.log(infoArray);
         var dataScienceEvents = infoArray.filter((event) => {
