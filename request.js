@@ -1,13 +1,10 @@
 //using the fetch api
 //requiring JSDom to add DOM support for Node
 const jsdom = require("jsdom");
-const JSDOM = jsdom.JSDOM;
 //requiring/defining fetch function from api
 const fetch = require("node-fetch");
 //creating the api to call
 const api_url = 'https://odum.unc.edu/wp-json/tribe/events/v1/events';
-//making document a global variable
-global.document = new JSDOM('https://odum.unc.edu/wp-json/tribe/events/v1/events').window.document;
 //setting up async function
 async function getAPI(api_url) {
     try {
@@ -15,52 +12,41 @@ async function getAPI(api_url) {
         const response = await fetch(api_url);
         //storing data in json format
         var data = await response.json();
-        // console.log(data.events);
     }
     catch (error) {
         console.log(error);
+    }
+    //accounting for json parsing error (enpoint might be sensitive to "user-agent")
+    headers: {
+        Accept: 'application/json, text/plain, */*',
+            'User-Agent';
     }
     return data.events;
 }
-//fetchEvents function 
-//gets and returns events 
-async function fetchEvents() {
+//rendering event data from API
+async function renderAPI(events) {
+    //getting info from the api
+    let infoArray
     try {
-        //getting info from the api
-        let info = await getAPI(api_url);
-        //console.log(info);
-        //creating an array for the info from the api 
-        //then mapping the event details to the array 
-        let infoArray = info.map(event => {
-            var dateObj = new Date(event.start_date);
-            var month = ("0" + (dateObj.getMonth() + 1)).slice(-2);
-            var day = ("0" + dateObj.getDate()).slice(-2);
-            var year = dateObj.getFullYear();
-            newdate = year + "-" + month + "-" + day;
-
-            return { title: event.title, url: `https://odum.unc.edu/event/${event.slug}/${newdate}`, description: event.description, date: event.start_date };
-        });
-        // return infoArray;
-        //filtering through the event descriptions to only pull data science events
-
+        infoArray = events.map(event => ({
+            name: event.title,
+            description: event.description,
+            date: event.start_date,
+            urlDate: {
+                dateObj: new Date(event.start_date),
+                month: ("0" + (dateObj.getMonth() + 1)).slice(-2),
+                day: ("0" + dateObj.getDate()).slice(-2),
+                year: dateObj.getFullYear(),
+                newdate: year + "-" + month + "-" + day,
+            },
+            url: `https://odum.unc.edu/event/${event.slug}/${urlDate}`,
+        }));
+        console.log(infoArray);
         var dataScienceEvents = infoArray.filter((event) => {
-            return event.description.includes('mixed methods'); //case sensitive
+            return event.description.includes('Introduction'); //case sensitive
         });
-    }
-    //
-    catch (error) {
-        console.log(error);
-    }
-    // console.log(dataScienceEvents);
-}
-//fetchEvents()
-
-//writing event details to a JSON file
-async function writeEvents() {
-    try {
         //writing data to JSON file
         const fs = require('fs');
-        const dataEvents = await fetchEvents();
         const jsonString = JSON.stringify(dataEvents, null, 2);
         fs.writeFile('./newEvents.json', jsonString, err => {
             if (err) {
@@ -69,24 +55,10 @@ async function writeEvents() {
                 console.log('Successfully wrote file');
             }
         });
-        console.log(dataEvents);
-    } catch (error) {
+    }
+    catch (error) {
         console.log(error);
     }
+    return infoArray;
 }
-writeEvents()
-/*
-//add fetchEvents function: responsible for getting and returning the events
-//add transformEvents function: responsible for making the response you receive "look" like the event format you want
-//add writeEvents function: responsible for interacting with the file system
-
-//final code format would look something like this:
-const events = fetchEvents(),
-    formattedEvents = transformEvents(events);
-writeEvents(formattedEvents);
-
-
-function transformEvents() {
-    //
-}
-*/
+renderAPI();
